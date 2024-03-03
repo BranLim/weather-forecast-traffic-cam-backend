@@ -1,16 +1,15 @@
 import { TrafficData } from './TrafficData';
-import { Location } from '../../Domain/Location';
+import { SgLocation } from '../../Domain/SgLocation';
 
-export const toLocations = (trafficData: TrafficData): Location[] => {
+export const extractLocations = (trafficData: TrafficData): SgLocation[] => {
   if (!trafficData || !trafficData.items) {
     return [];
   }
-  const locations: Location[] = trafficData.items[0].cameras.map((camera) => {
+  const locations: SgLocation[] = trafficData.items[0].cameras.map((camera) => {
     return {
       latitude: camera.location.latitude,
       longitude: camera.location.longitude,
-      image: camera.image,
-    } as Location;
+    } as SgLocation;
   });
   return locations;
 };

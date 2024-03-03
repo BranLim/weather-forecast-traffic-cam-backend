@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { TrafficService } from '../../infrastructure/TrafficService';
-import { TrafficData } from '../../infrastructure/acl/TrafficData';
-import { Location } from '../../Domain/Location'
+import { Inject, Injectable } from '@nestjs/common';
+import { SgLocation } from '../../Domain/SgLocation';
+import { LocationService } from '../../Domain/LocationService';
 
 @Injectable()
 export class AppService {
-  constructor(private trafficService: TrafficService) {}
+  constructor(
+    @Inject('LocationService')
+    private readonly locationService: LocationService,
+  ) {}
 
-  async getLocation(datetime: string): Promise<Location[]> {
-    return await this.trafficService.getTrafficLocations(datetime);
+  async getLocation(datetime: string): Promise<SgLocation[]> {
+    return await this.locationService.getLocations(datetime);
   }
 }

@@ -1,6 +1,6 @@
 export type TrafficCameraLocation = {
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
 };
 export type TrafficCamera = {
   timestamp: string;
@@ -17,8 +17,9 @@ export type TrafficCamera = {
 export type TrafficDataItem = {
   timestamp: string;
   cameras: TrafficCamera[];
-}
+};
 
 export type TrafficData = {
-  items: TrafficDataItem [];
+  api_info: { status: string };
+  items: TrafficDataItem[];
 };

@@ -12,7 +12,7 @@ import {
   ApiOkResponse,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Location } from '../../Domain/Location';
+import { SgLocation } from '../../Domain/SgLocation';
 
 @Controller('/api/locations')
 export class LocationController {
@@ -22,7 +22,7 @@ export class LocationController {
   @ApiQuery({ name: 'datetime', example: '2023-12-20T10:40:00' })
   @ApiOkResponse({ status: 200, description: 'Location data found' })
   @ApiBadRequestResponse({ status: 400, description: 'Invalid input' })
-  async getLocation(@Query('datetime') datetime: string): Promise<Location[]> {
+  async getLocation(@Query('datetime') datetime: string): Promise<SgLocation[]> {
     if (!datetime) {
       throw new HttpException('Datetime needed', HttpStatus.BAD_REQUEST);
     }
