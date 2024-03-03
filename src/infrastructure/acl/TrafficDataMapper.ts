@@ -9,8 +9,8 @@ export const toLocations = (trafficData: TrafficData): Location[] => {
     return {
       latitude: camera.location.latitude,
       longitude: camera.location.longitude,
-      image : camera.image
-    } as Location
+      image: camera.image,
+    } as Location;
   });
   return locations;
 };
