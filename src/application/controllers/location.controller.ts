@@ -2,6 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 
 import { AppService } from '../services/app.service';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { Location } from '../../Domain/Location';
 
 @Controller('/api/locations')
 export class LocationController {
@@ -9,7 +10,7 @@ export class LocationController {
 
   @Get()
   @ApiOkResponse({ status: 200, description: 'Location data found' })
-  async getLocation(@Query() datetime: string): Promise<{}> {
+  async getLocation(@Query() datetime: string): Promise<Location[]> {
     return await this.appService.getLocation(datetime);
   }
 }
