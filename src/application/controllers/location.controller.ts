@@ -1,4 +1,4 @@
-import {Controller, Get, Query} from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 import { AppService } from '../services/app.service';
 import { ApiOkResponse } from '@nestjs/swagger';
@@ -10,6 +10,6 @@ export class LocationController {
   @Get()
   @ApiOkResponse({ status: 200, description: 'Location data found' })
   async getLocation(@Query() datetime: string): Promise<{}> {
-    return {};
+    return await this.appService.getLocation(datetime);
   }
 }
