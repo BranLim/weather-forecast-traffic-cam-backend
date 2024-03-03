@@ -1,7 +1,17 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 
 import { AppService } from '../services/app.service';
-import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiOkResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Location } from '../../Domain/Location';
 
 @Controller('/api/locations')
@@ -9,8 +19,13 @@ export class LocationController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
+  @ApiQuery({ name: 'datetime', example: '2023-12-20T10:40:00' })
   @ApiOkResponse({ status: 200, description: 'Location data found' })
-  async getLocation(@Query() datetime: string): Promise<Location[]> {
+  @ApiBadRequestResponse({ status: 400, description: 'Invalid input' })
+  async getLocation(@Query('datetime') datetime: string): Promise<Location[]> {
+    if (!datetime) {
+      throw new HttpException('Datetime needed', HttpStatus.BAD_REQUEST);
+    }
     return await this.appService.getLocation(datetime);
   }
 }

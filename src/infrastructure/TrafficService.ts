@@ -13,12 +13,12 @@ export class TrafficService {
   }
 
   async getTrafficLocations(datetime: string): Promise<Location[]> {
+    if (!datetime) {
+      throw new Error('no datetime provided');
+    }
     const { data } = await firstValueFrom(
-      this.httpService.get(`${this.baseUrl}/transport/traffic-images`, {
-        params: { data_time: datetime },
-      }),
+      this.httpService.get(`${this.baseUrl}/transport/traffic-images?date_time=${datetime}`),
     );
-    console.log(data);
     return toLocations(data);
   }
 }
