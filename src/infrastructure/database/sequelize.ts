@@ -1,4 +1,4 @@
-import { Sequelize, Options } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 import * as process from 'process';
 

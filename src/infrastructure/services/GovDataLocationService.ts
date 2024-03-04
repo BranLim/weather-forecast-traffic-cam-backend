@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { LocationService } from '../../Domain/LocationService';
 import { HttpService } from '@nestjs/axios';
 import { LocationInformation } from 'src/Domain/LocationInformation';
@@ -7,13 +7,18 @@ import { extractLocations } from './acl/TrafficDataMapper';
 import { extractAreaInfo } from './acl/WeatherDataMapper';
 import { TrafficData } from './acl/TrafficData';
 import { EnvironmentData } from './acl/WeatherForecastData';
+import { SGRegionRepository } from '../../Domain/SGRegionRepository';
 
 @Injectable()
 export class GovDataLocationService implements LocationService {
   private baseUrl: string;
   private readonly logger = new Logger(GovDataLocationService.name);
 
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject('SGRegionRepository')
+    private readonly sgRegionRepository: SGRegionRepository,
+  ) {
     this.baseUrl = process.env.DATA_API_BASE_URL;
   }
 
@@ -24,7 +29,7 @@ export class GovDataLocationService implements LocationService {
 
     const trafficDataRequest = this.httpService
       .get<TrafficData>(
-        `${this.baseUrl}/transport/traffic-images?date_time=${datetime}`,
+        `${this.baseUrl}transport/traffic-images?date_time=${datetime}`,
       )
       .pipe(
         map((response) => {
@@ -42,7 +47,7 @@ export class GovDataLocationService implements LocationService {
         switchMap(async (trafficLocations) => {
           const environmentDataRequest = this.httpService
             .get<EnvironmentData>(
-              `${this.baseUrl}/environment/2-hour-forecast?date_time=${datetime}`,
+              `${this.baseUrl}environment/2-hour-weather-forecast?date_time=${datetime}`,
             )
             .pipe(
               map((response) => {
@@ -79,14 +84,13 @@ export class GovDataLocationService implements LocationService {
     return locations;
   }
 
-  private areCoordinatesEqual(
+  private calculateDistance(
     lat1: number,
     lon1: number,
     lat2: number,
     lon2: number,
-    epsilon: number = 0.000001,
-  ): boolean {
-    return Math.abs(lat1 - lat2) < epsilon && Math.abs(lon1 - lon2) < epsilon;
+  ): number {
+    return Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lon1 - lon2, 2));
   }
 
   private populateLocationName(
@@ -94,14 +98,20 @@ export class GovDataLocationService implements LocationService {
     locationInformation: LocationInformation[],
   ): LocationInformation[] {
     return trafficLocations.map((location) => {
-      const foundLocation = locationInformation.find((l) =>
-        this.areCoordinatesEqual(
+      let nearestDistance: number = Infinity;
+      let foundLocation: LocationInformation;
+      locationInformation.forEach((l) => {
+        const distance = this.calculateDistance(
           location.latitude,
           location.longitude,
           l.latitude,
           l.longitude,
-        ),
-      );
+        );
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          foundLocation = l;
+        }
+      });
 
       if (foundLocation) {
         return {
