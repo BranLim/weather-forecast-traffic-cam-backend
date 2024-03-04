@@ -4,15 +4,16 @@ import { LocationInformation } from 'src/Domain/LocationInformation';
 
 @Injectable()
 export class SequelizeSGRegionRepository implements SGRegionRepository {
+  constructor() {}
 
-  constructor() {
+  async create(locationInformation: LocationInformation) {
+    throw new Error('Method not implemented.');
   }
 
-    async create(locationInformation: LocationInformation) {
-        throw new Error('Method not implemented.');
-    }
-    async find(latitude: number, longitude: number): Promise<LocationInformation> {
-        throw new Error('Method not implemented.');
-    }
-
+  async find(
+    latitude: number,
+    longitude: number,
+  ): Promise<LocationInformation> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -8,29 +8,35 @@ interface SGRegionRow {
   longitude: number;
 }
 
-export class SequelizeSGRegion extends Model<SGRegionRow, Omit<SGRegionRow, 'id'>> {
+export class SequelizeSGRegion extends Model<
+  SGRegionRow,
+  Omit<SGRegionRow, 'id'>
+> {
   declare id: number;
   declare name: string;
   declare latitude: number;
   declare longitude: number;
 }
 
-SequelizeSGRegion.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
+SequelizeSGRegion.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    latitude: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
+    longitude: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  latitude: {
-    type: DataTypes.DECIMAL,
-    allowNull: false,
-  },
-  longitude: {
-    type: DataTypes.DECIMAL,
-    allowNull: false,
-  },
-}, { sequelize, timestamps: false, tableName: 'SGRegion' });
+  { sequelize, timestamps: false, tableName: 'SGRegion' },
+);
