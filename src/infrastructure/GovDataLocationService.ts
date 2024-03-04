@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LocationService } from '../Domain/LocationService';
 import { HttpService } from '@nestjs/axios';
-import { SgLocation } from 'src/Domain/SgLocation';
+import { LocationInformation } from 'src/Domain/LocationInformation';
 import { catchError, lastValueFrom, map, switchMap } from 'rxjs';
 import { extractLocations } from './acl/TrafficDataMapper';
 import { extractAreaInfo } from './acl/WeatherDataMapper';
@@ -17,7 +17,7 @@ export class GovDataLocationService implements LocationService {
     this.baseUrl = process.env.DATA_API_BASE_URL;
   }
 
-  async getLocations(datetime: string): Promise<SgLocation[]> {
+  async getLocations(datetime: string): Promise<LocationInformation[]> {
     if (!datetime) {
       throw new Error('no datetime provided');
     }
@@ -46,7 +46,7 @@ export class GovDataLocationService implements LocationService {
             )
             .pipe(
               map((response) => {
-                  this.logger.log('Received data for weather forecast');
+                this.logger.log('Received data for weather forecast');
                 return extractAreaInfo(response.data);
               }),
             )
@@ -57,12 +57,10 @@ export class GovDataLocationService implements LocationService {
               }),
             );
 
-          const locationInformation: SgLocation[] = await lastValueFrom(
-            environmentDataRequest,
-            {
+          const locationInformation: LocationInformation[] =
+            await lastValueFrom(environmentDataRequest, {
               defaultValue: [],
-            },
-          );
+            });
 
           return this.populateLocationName(
             trafficLocations,
@@ -71,9 +69,12 @@ export class GovDataLocationService implements LocationService {
         }),
       );
 
-    const locations: SgLocation[] = await lastValueFrom(trafficDataRequest, {
-      defaultValue: [],
-    });
+    const locations: LocationInformation[] = await lastValueFrom(
+      trafficDataRequest,
+      {
+        defaultValue: [],
+      },
+    );
 
     return locations;
   }
@@ -89,9 +90,9 @@ export class GovDataLocationService implements LocationService {
   }
 
   private populateLocationName(
-    trafficLocations: SgLocation[],
-    locationInformation: SgLocation[],
-  ): SgLocation[] {
+    trafficLocations: LocationInformation[],
+    locationInformation: LocationInformation[],
+  ): LocationInformation[] {
     return trafficLocations.map((location) => {
       const foundLocation = locationInformation.find((l) =>
         this.areCoordinatesEqual(

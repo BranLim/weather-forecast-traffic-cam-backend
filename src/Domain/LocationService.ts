@@ -1,5 +1,5 @@
-import { SgLocation } from './SgLocation';
+import { LocationInformation } from './LocationInformation';
 
 export interface LocationService {
-  getLocations(datetime: string): Promise<SgLocation[]>;
+  getLocations(datetime: string): Promise<LocationInformation[]>;
 }

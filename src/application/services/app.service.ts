@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { SgLocation } from '../../Domain/SgLocation';
+import { LocationInformation } from '../../Domain/LocationInformation';
 import { LocationService } from '../../Domain/LocationService';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class AppService {
     private readonly locationService: LocationService,
   ) {}
 
-  async getLocation(datetime: string): Promise<SgLocation[]> {
+  async getLocation(datetime: string): Promise<LocationInformation[]> {
     return await this.locationService.getLocations(datetime);
   }
 }
