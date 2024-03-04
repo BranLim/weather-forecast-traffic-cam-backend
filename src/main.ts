@@ -4,7 +4,9 @@ import { APP_PORT } from './constant';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log'],
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Weather and Traffic Data')

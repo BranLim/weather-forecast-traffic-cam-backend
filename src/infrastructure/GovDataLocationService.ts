@@ -1,18 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { LocationService } from '../Domain/LocationService';
 import { HttpService } from '@nestjs/axios';
 import { SgLocation } from 'src/Domain/SgLocation';
-import { catchError, firstValueFrom, forkJoin, lastValueFrom, map } from 'rxjs';
+import { catchError, lastValueFrom, map, switchMap } from 'rxjs';
 import { extractLocations } from './acl/TrafficDataMapper';
 import { extractAreaInfo } from './acl/WeatherDataMapper';
 import { TrafficData } from './acl/TrafficData';
 import { EnvironmentData } from './acl/WeatherForecastData';
-import { AxiosError } from 'axios';
-import { response } from 'express';
 
 @Injectable()
 export class GovDataLocationService implements LocationService {
   private baseUrl: string;
+  private readonly logger = new Logger(GovDataLocationService.name);
 
   constructor(private readonly httpService: HttpService) {
     this.baseUrl = process.env.DATA_API_BASE_URL;
@@ -23,33 +22,57 @@ export class GovDataLocationService implements LocationService {
       throw new Error('no datetime provided');
     }
 
-    const trafficResponse = await this.httpService.axiosRef.get<TrafficData>(
-      `${this.baseUrl}/transport/traffic-images?date_time=${datetime}`,
-    );
+    const trafficDataRequest = this.httpService
+      .get<TrafficData>(
+        `${this.baseUrl}/transport/traffic-images?date_time=${datetime}`,
+      )
+      .pipe(
+        map((response) => {
+          this.logger.log('Received data for traffic locations');
+          return extractLocations(response.data);
+        }),
+      )
+      .pipe(
+        catchError((err) => {
+          this.logger.error('Error calling traffic endpoint', err);
+          return [];
+        }),
+      )
+      .pipe(
+        switchMap(async (trafficLocations) => {
+          const environmentDataRequest = this.httpService
+            .get<EnvironmentData>(
+              `${this.baseUrl}/environment/2-hour-forecast?date_time=${datetime}`,
+            )
+            .pipe(
+              map((response) => {
+                  this.logger.log('Received data for weather forecast');
+                return extractAreaInfo(response.data);
+              }),
+            )
+            .pipe(
+              catchError((err) => {
+                this.logger.error('Error calling weather endpoint', err);
+                return [];
+              }),
+            );
 
-    const environmentResponse =
-      await this.httpService.axiosRef.get<EnvironmentData>(
-        `${this.baseUrl}/environment/2-hour-forecast?date_time=${datetime}`,
+          const locationInformation: SgLocation[] = await lastValueFrom(
+            environmentDataRequest,
+            {
+              defaultValue: [],
+            },
+          );
+
+          return this.populateLocationName(
+            trafficLocations,
+            locationInformation,
+          );
+        }),
       );
 
-    let locations = extractLocations(trafficResponse.data);
-    const locationInformation = extractAreaInfo(environmentResponse.data);
-
-    locations = locations.map((location) => {
-      const foundLocation = locationInformation.find((l) =>
-        this.areCoordinatesEqual(
-          location.latitude,
-          location.longitude,
-          l.latitude,
-          l.longitude,
-        ),
-      );
-      if (foundLocation) {
-        return {
-          ...location,
-          name: foundLocation.name,
-        };
-      }
+    const locations: SgLocation[] = await lastValueFrom(trafficDataRequest, {
+      defaultValue: [],
     });
 
     return locations;
@@ -63,5 +86,29 @@ export class GovDataLocationService implements LocationService {
     epsilon: number = 0.000001,
   ): boolean {
     return Math.abs(lat1 - lat2) < epsilon && Math.abs(lon1 - lon2) < epsilon;
+  }
+
+  private populateLocationName(
+    trafficLocations: SgLocation[],
+    locationInformation: SgLocation[],
+  ): SgLocation[] {
+    return trafficLocations.map((location) => {
+      const foundLocation = locationInformation.find((l) =>
+        this.areCoordinatesEqual(
+          location.latitude,
+          location.longitude,
+          l.latitude,
+          l.longitude,
+        ),
+      );
+
+      if (foundLocation) {
+        return {
+          ...location,
+          name: foundLocation.name,
+        };
+      }
+      return location;
+    });
   }
 }
