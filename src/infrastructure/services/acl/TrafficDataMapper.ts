@@ -1,5 +1,5 @@
 import { TrafficData } from './TrafficData';
-import { LocationInformation } from '../../Domain/LocationInformation';
+import { LocationInformation } from '../../../Domain/LocationInformation';
 
 export const extractLocations = (
   trafficData: TrafficData,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LocationService } from '../Domain/LocationService';
+import { LocationService } from '../../Domain/LocationService';
 import { HttpService } from '@nestjs/axios';
 import { LocationInformation } from 'src/Domain/LocationInformation';
 import { catchError, lastValueFrom, map, switchMap } from 'rxjs';

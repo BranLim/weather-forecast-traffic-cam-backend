@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { LocationController } from './application/controllers/location.controller';
 import { AppService } from './application/services/app.service';
 import { HttpModule } from '@nestjs/axios';
-import { GovDataLocationService } from './infrastructure/GovDataLocationService';
+import { GovDataLocationService } from './infrastructure/services/GovDataLocationService';
 
 @Module({
   imports: [HttpModule],

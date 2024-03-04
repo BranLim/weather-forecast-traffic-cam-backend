@@ -1,5 +1,5 @@
 import { EnvironmentData } from './WeatherForecastData';
-import { LocationInformation } from '../../Domain/LocationInformation';
+import { LocationInformation } from '../../../Domain/LocationInformation';
 
 export const extractAreaInfo = (
   environmentData: EnvironmentData,
